@@ -6,7 +6,7 @@ typedef unsigned long int size_t;
 template <int N>
 inline int mod(int x)
 {
-    return N & (N - 1) ? x % N : x & (N-1);
+    return (N & (N - 1)) ? (x % N) : (x & (N-1));
 }
 
 //fixed size deque
@@ -56,6 +56,12 @@ public:
         }
         std::cout << "\n";
     }
+    void clear()
+    {
+        m_head = 0;
+        m_size = 0;
+    }
+    // debug func: internal buffer
     void _bf() const
     {
         for (int i = 0 ; i < N; ++i)
@@ -64,6 +70,7 @@ public:
         }
         std::cout << "\n";
     }
+    // debug func: head
     int _hd() const { return m_head; }
 private:
     
