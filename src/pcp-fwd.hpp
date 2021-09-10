@@ -1,9 +1,14 @@
 #pragma once
 
-class Server;
-class Work;
-class Buffer;
+namespace pcp
+{
 
-class Client;
-class Producer;
-class Consumer;
+    class Server;
+    class Work;
+    class Buffer;
+
+    class Client;
+    class Producer;
+    class Consumer;
+
+} // namespace pcp

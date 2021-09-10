@@ -3,25 +3,30 @@
 #include "pcp-fwd.hpp"
 #include <mutex>
 
-class Buffer
+namespace pcp
 {
-public:
-    static const int CAPACITY{32};
-    std::mutex m_mtx;
-    
-    Buffer();
-    ~Buffer();
 
-    void put(std::string item);
+    class Buffer
+    {
+    public:
+        static const int CAPACITY{32};
+        std::mutex m_mtx;
 
-    std::string pop();
+        Buffer();
+        ~Buffer();
 
-    int size() const;
-    int capacity() const;
-    void clear();
+        void put(std::string item);
 
-private:
-    deque<std::string, CAPACITY> m_deque{};
+        std::string pop();
 
-    void log(std::string &&msg);
-};
+        int size() const;
+        int capacity() const;
+        void clear();
+
+    private:
+        deque<std::string, CAPACITY> m_deque{};
+
+        void log(std::string &&msg);
+    };
+
+} // namespace pcp

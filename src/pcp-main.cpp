@@ -3,7 +3,7 @@
  * semaphores solution
  */
 #include "pcp-server.hpp"
-#include "pcp-logger.hpp"
+#include "logger.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
     //csv header
     logger::instance() << "class;id;msg;items\n";
-    Server server {n_prods,n_cons};
+    pcp::Server server {n_prods,n_cons};
 
     auto start = std::chrono::steady_clock::now();
     server.run(n_jobs);
