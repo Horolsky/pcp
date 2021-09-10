@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
             << "-j <jobs, def:10000>    \n"
             << "-p <producers, def:10>  \n"
             << "-c <consumers, def:10   \n"
-            << "-o <output, optional>   \n";
+            << "-o <output, def:cout>   \n";
         return 0;
     }
 
@@ -59,27 +59,28 @@ int main(int argc, char *argv[])
     int n_prods = numeric_flags[1].second;
     int n_cons = numeric_flags[2].second;
 
-    // std::cout
-        // << "task params:\n"
-        // << "jobs:" << n_jobs << "\n"
-        // << "prods:" << n_prods << "\n"
-        // << "cons:" << n_cons << "\n";
+    std::cout
+        << "task params:\n"
+        << "jobs:" << n_jobs << "\n"
+        << "prods:" << n_prods << "\n"
+        << "cons:" << n_cons << "\n";
 
     //csv header
     logger::instance() << "class;id;msg;items\n";
-    pcp::Server server {n_prods,n_cons};
-
+    
     auto start = std::chrono::steady_clock::now();
-    server.run(n_jobs);
-    int period = 5 * n_jobs;
-    if (period > 100) period = 100; 
-    while (server.in_progress())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(period));
+        pcp::Server server{n_prods, n_cons};
+        server.run(n_jobs);
+        int period = 5 * n_jobs;
+        if (period > 100)
+            period = 100;
+        while (server.in_progress())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(period));
+        }
     }
     auto end = std::chrono::steady_clock::now();
-
-    logger::instance() << "working time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-    // logger::instance()
+    std::cout << "working time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
     return 0;
 }
