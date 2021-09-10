@@ -1,0 +1,18 @@
+@startuml pcp-classes
+
+    class Server
+    class Work
+    class Buffer
+    class Client
+    class Producer
+    class Consumer
+    class deque
+    
+    namespace pcp {
+        Server *-- Work
+        Server *-- Buffer
+        Buffer *-- .deque
+        Client <|-- Producer
+        Client <|-- Consumer
+    }
+@enduml
