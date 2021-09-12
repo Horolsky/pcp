@@ -1,16 +1,20 @@
 #include "pcp-client.hpp"
 #include "logger.hpp"
+#include <sstream>
 
 namespace pcp
 {
 
     void Client::log(std::string &&msg)
     {
-        logger::instance()
+        
+        std::ostringstream log_msg;
+        log_msg
             << name() << ";"
             << this << ";"
             << msg << ";"
             << m_items << "\n";
+        logger::instance() << log_msg.str();
     }
 
     const char *Client::name() const { return "Client"; }
@@ -72,14 +76,14 @@ namespace pcp
     {
         std::lock_guard<std::mutex> lock(m_mtx);
         std::string item = "item n. " + std::to_string(++m_items);
-        log("produced " + item);
+        log("producing " + item);
         return item;
     }
     void Consumer::consume(std::string item)
     {
         std::lock_guard<std::mutex> lock(m_mtx);
         ++m_items;
-        log("consumed " + item);
+        log("consuming " + item);
     }
 
     bool Producer::server_job(Buffer &buffer)

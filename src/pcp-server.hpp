@@ -5,6 +5,7 @@
 #include "pcp-client.hpp"
 #include <atomic>
 #include <condition_variable>
+#include <map>
 #include <mutex>
 #include <functional>
 #include <thread>
@@ -25,8 +26,6 @@ namespace pcp
 
             Work(const Work &other) : client(other.client){};
             Work(Work &&other) : client(other.client){};
-            // Work& operator=(const Work& other) { client = other.client; }
-            // Work& operator=(Work&& other) { client = other.client; }
         };
         using client_in_progress_fp = bool (Client::*)() const;
         Server(
@@ -43,7 +42,7 @@ namespace pcp
     private:
         std::condition_variable m_awaker;
         std::vector<std::thread> m_threads;
-        std::vector<Work> m_works;
+        std::map<int,std::mutex> m_mutexes;
 
         //TODO: multiple polymorphic PCP clients
         Producer m_producer;
@@ -51,14 +50,13 @@ namespace pcp
         Buffer m_buffer;
 
         std::mutex m_bufmtx;
+        std::mutex m_logmtx;
 
         const int NOF_PRODS;
         const int NOF_CONS;
         bool m_on_service;
 
         void log(std::string &&msg);
-
-        void worker_reset(int id, Client &client);
         void worker_serve(int id);
     };
 

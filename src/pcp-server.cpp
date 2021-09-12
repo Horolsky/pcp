@@ -1,8 +1,21 @@
 #include "pcp-server.hpp"
 #include "logger.hpp"
 
+#include <sstream>
+
 namespace pcp
 {
+    void Server::log(std::string &&msg)
+    {
+        std::lock_guard<std::mutex> lock(m_logmtx);
+        std::ostringstream log_msg;
+        log_msg
+            << "Server;"
+            << this << ";"
+            << msg << ";"
+            << m_buffer.size() << "\n";
+        logger::instance() << log_msg.str();
+    }
 
     Server::Server(int prod_workers, int cons_workers)
         : NOF_PRODS(prod_workers), NOF_CONS(cons_workers),
@@ -12,16 +25,9 @@ namespace pcp
           m_on_service(true)
     {
         m_threads = std::vector<std::thread>();
-        m_works = std::vector<Work>();
-
-        for (int i = 0; i < NOF_PRODS; i++)
+        log("ctor");
+        for (int i = 0; i < NOF_PRODS + NOF_CONS; i++)
         {
-            m_works.emplace_back<Work>({m_producer});
-            m_threads.emplace_back(&Server::worker_serve, this, i);
-        }
-        for (int i = NOF_PRODS; i < NOF_PRODS + NOF_CONS; i++)
-        {
-            m_works.emplace_back<Work>({m_consumer});
             m_threads.emplace_back(&Server::worker_serve, this, i);
         }
     }
@@ -29,12 +35,14 @@ namespace pcp
     Server::~Server()
     {
         m_on_service = false;
+        m_awaker.notify_all();
+        log("joining workers");
         for (int i = 0; i < m_threads.size(); i++)
         {
             m_threads[i].join();
         }
-        m_works.clear();
         m_threads.clear();
+        log("dtor");
     }
 
     Server::Server(const Server &other)
@@ -45,16 +53,9 @@ namespace pcp
           m_on_service(true)
     {
         m_threads = std::vector<std::thread>();
-        m_works = std::vector<Work>();
-
-        for (int i = 0; i < NOF_PRODS; i++)
+        log("cp ctor");
+        for (int i = 0; i < NOF_PRODS + NOF_CONS; i++)
         {
-            m_works.emplace_back<Work>({m_producer});
-            m_threads.emplace_back(&Server::worker_serve, this, i);
-        }
-        for (int i = NOF_PRODS; i < NOF_PRODS + NOF_CONS; i++)
-        {
-            m_works.emplace_back<Work>({m_consumer});
             m_threads.emplace_back(&Server::worker_serve, this, i);
         }
     }
@@ -65,8 +66,8 @@ namespace pcp
           m_consumer(other.m_consumer),
           m_on_service(true)
     {
+        log("mv ctor");
         m_threads = std::move(other.m_threads);
-        m_works = std::move(other.m_works);
     }
 
     bool Server::run(int nof_items)
@@ -76,6 +77,7 @@ namespace pcp
         m_producer.reset(nof_items);
         m_consumer.reset(nof_items);
         m_buffer.clear();
+        log("running " + std::to_string(nof_items) + " jobs");
         m_awaker.notify_all();
         return true;
     }
@@ -85,33 +87,26 @@ namespace pcp
         return m_producer.in_progress() && m_consumer.in_progress();
     }
 
-    void Server::log(std::string &&msg)
-    {
-        logger::instance()
-            << "Server;"
-            << this << ";"
-            << msg << ";"
-            << m_buffer.size() << "\n";
-    }
-
-    void Server::worker_reset(int id, Client &client)
-    {
-        std::unique_lock<std::mutex> lock(m_works[id].mtx);
-        m_works[id].client = client;
-    }
     void Server::worker_serve(int id)
     {
+        log("starting worker " + std::to_string(id));
+        Client &client = id < NOF_PRODS ? static_cast<Client&>(m_producer) : static_cast<Client&>(m_consumer);
         while (m_on_service)
         {
-            while (m_works[id].client.in_progress() || !m_on_service)
+            while (client.in_progress() && m_on_service)
             {
                 std::lock_guard<std::mutex> lock(m_bufmtx);
-                m_works[id].client.server_job(m_buffer);
+                client.server_job(m_buffer);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            // std::unique_lock<std::mutex> lock(m_works[id].mtx);
-            // m_awaker.wait(lock,[&]{ return (m_works[id].client.in_progress() || !m_on_service ); });
+            std::unique_lock<std::mutex> lock(m_mutexes[id]);
+            log("lulling worker " + std::to_string(id));
+            m_awaker.wait(lock,[&]{ 
+                return m_on_service ? client.in_progress() : true;
+                });
+            log("awaking worker " + std::to_string(id));
         }
+
+        log("finishing worker " + std::to_string(id));
     }
 
 } // namespace pcp

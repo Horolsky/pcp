@@ -1,5 +1,6 @@
 #include "pcp-buffer.hpp"
 #include "logger.hpp"
+#include <sstream>
 
 namespace pcp
 {
@@ -46,11 +47,13 @@ namespace pcp
 
     void Buffer::log(std::string &&msg)
     {
-        logger::instance()
+        std::ostringstream log_msg;
+        log_msg
             << "Buffer;"
             << this << ";"
             << msg << ";"
             << m_deque.size() << "\n";
+        logger::instance() << log_msg.str();
     }
 
 } // namespace pcp
