@@ -20,13 +20,13 @@
         {
             +Server(int prod_workers, int cons_workers)
             ---
-            +bool run(int int jobs)
+            +bool run(Producer &, Consumer &)
             +bool in_progress()
             ---
             -void worker_serve(int id)
 
-            -Producer m_producer
-            -Consumer m_consumer
+            -Producer &m_producer
+            -Consumer &m_consumer
             -Buffer m_buffer       
 
             -const int NOF_PRODS

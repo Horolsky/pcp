@@ -7,9 +7,9 @@ Producer-Consumer Problem sandbox
 
 ### Descr
 `pcp-classes` update includes:  
-- Prod-Cons problem split into object units in namespace `pcp`. See more on [pcp-classes.png](diagrams/img/pcp-classes.png) 
 - [deque](../src/deque.hpp) minor upgrades
-- thread-safe [logger](../src/logger.hpp) draft  
+- draft version of thread-safe [logger](../src/logger.hpp)  
+- Prod-Cons problem split into object units in namespace `pcp`. See more in [Diagram](#Diagram) section below.  
 
 ### Added
 - [src](../src/) dir
@@ -26,6 +26,10 @@ Producer-Consumer Problem sandbox
             - [pcp-classes.png](diagrams/img/pcp-classes.png)
 - [CMakeLists.txt](../CMakeLists.txt)
 - [build.sh](../build.sh)  
+
+### Diagram
+
+![pcp-classes.png](diagrams/img/pcp-classes.png)  
 
 ### TODO
 - tests
