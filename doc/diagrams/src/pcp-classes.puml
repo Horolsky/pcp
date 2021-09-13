@@ -1,6 +1,6 @@
 @startuml pcp-classes
     
-    class deque <<type T, size N>>
+    class deque <<type T, capacity N>>
     {
         +int capacity() const
         +int size() const
@@ -12,6 +12,10 @@
         +T pop_back()
         +T operator[](int index)
         +void clear()
+        ---
+        -T m_data[N]
+        -int m_head
+        -int m_size
     }
 
     namespace pcp {

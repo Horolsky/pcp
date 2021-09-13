@@ -16,7 +16,7 @@ class deque
 public:
     typedef T value_type;
 
-    size_t capacity() {return N; }
+    size_t capacity() const {return N; }
     bool empty() const { return m_size == 0; }
     size_t size() const { return m_size; }
 
