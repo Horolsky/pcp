@@ -5,6 +5,17 @@
 namespace pcp
 {
 
+    void Buffer::log(std::string &&msg)
+    {
+        // std::ostringstream log_msg;
+        // log_msg
+            // << "Buffer;"
+            // << this << ";"
+            // << msg << ";"
+            // << m_deque.size() << "\n";
+        // logger::instance() << log_msg.str();
+    }
+
     Buffer::Buffer()
         : m_deque()
     {
@@ -43,17 +54,6 @@ namespace pcp
     {
         std::lock_guard<std::mutex> lock(m_mtx);
         m_deque.clear();
-    }
-
-    void Buffer::log(std::string &&msg)
-    {
-        std::ostringstream log_msg;
-        log_msg
-            << "Buffer;"
-            << this << ";"
-            << msg << ";"
-            << m_deque.size() << "\n";
-        logger::instance() << log_msg.str();
     }
 
 } // namespace pcp
