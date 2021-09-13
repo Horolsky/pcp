@@ -3,7 +3,7 @@ Producer-Consumer Problem sandbox
 
 ## [Unreleased]
 
-## [0.0.1] - 2021-09-10
+## [0.0.1] - 2021-09-13
 
 ### Descr
 `pcp-classes` update includes:  
