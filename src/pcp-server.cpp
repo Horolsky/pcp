@@ -24,12 +24,36 @@ namespace pcp
           m_buffer(),
           m_on_service(true)
     {
-        m_threads = std::vector<std::thread>();
         log("ctor");
         for (int i = 0; i < NOF_PRODS + NOF_CONS; i++)
         {
-            m_threads.emplace_back(&Server::worker_serve, this, i);
+            m_threads[i] = std::thread(&Server::worker_serve, this, i);
         }
+    }
+
+    Server::Server(const Server &other)
+        : NOF_PRODS(other.NOF_PRODS),
+          NOF_CONS(other.NOF_CONS),
+          m_producer(other.m_producer),
+          m_consumer(other.m_consumer),
+          m_on_service(true)
+    {
+        log("cp ctor");
+        for (int i = 0; i < NOF_PRODS + NOF_CONS; i++)
+        {
+            m_threads[i] = std::thread(&Server::worker_serve, this, i);
+        }
+    }
+
+    Server::Server(Server &&other)
+        : NOF_PRODS(other.NOF_PRODS),
+          NOF_CONS(other.NOF_CONS),
+          m_producer(other.m_producer),
+          m_consumer(other.m_consumer),
+          m_on_service(true)
+    {
+        log("mv ctor");
+        m_threads = std::move(other.m_threads);
     }
 
     Server::~Server()
@@ -45,39 +69,14 @@ namespace pcp
         log("dtor");
     }
 
-    Server::Server(const Server &other)
-        : NOF_PRODS(other.NOF_PRODS),
-          NOF_CONS(other.NOF_CONS),
-          m_producer(other.m_producer),
-          m_consumer(other.m_consumer),
-          m_on_service(true)
-    {
-        m_threads = std::vector<std::thread>();
-        log("cp ctor");
-        for (int i = 0; i < NOF_PRODS + NOF_CONS; i++)
-        {
-            m_threads.emplace_back(&Server::worker_serve, this, i);
-        }
-    }
-    Server::Server(Server &&other)
-        : NOF_PRODS(other.NOF_PRODS),
-          NOF_CONS(other.NOF_CONS),
-          m_producer(other.m_producer),
-          m_consumer(other.m_consumer),
-          m_on_service(true)
-    {
-        log("mv ctor");
-        m_threads = std::move(other.m_threads);
-    }
-
-    bool Server::run(int nof_items)
+    bool Server::run(int jobs)
     {
         if (in_progress())
             return false;
-        m_producer.reset(nof_items);
-        m_consumer.reset(nof_items);
+        m_producer.reset(jobs);
+        m_consumer.reset(jobs);
         m_buffer.clear();
-        log("running " + std::to_string(nof_items) + " jobs");
+        log("running " + std::to_string(jobs) + " jobs");
         m_awaker.notify_all();
         return true;
     }

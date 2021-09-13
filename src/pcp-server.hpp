@@ -18,30 +18,18 @@ namespace pcp
     class Server
     {
     public:
-        struct Work
-        {
-            Client &client;
-            std::mutex mtx;
-            Work(Client &client) : client(client){};
-
-            Work(const Work &other) : client(other.client){};
-            Work(Work &&other) : client(other.client){};
-        };
-        using client_in_progress_fp = bool (Client::*)() const;
-        Server(
-            int prod_workers,
-            int cons_workers);
-
+        
+        Server(int prod_workers, int cons_workers);
         Server(const Server &other);
         Server(Server &&other);
         ~Server();
 
-        bool run(int nof_items);
+        bool run(int jobs);
         bool in_progress();
 
     private:
         std::condition_variable m_awaker;
-        std::vector<std::thread> m_threads;
+        std::map<int,std::thread> m_threads;
         std::map<int,std::mutex> m_mutexes;
 
         //TODO: multiple polymorphic PCP clients
