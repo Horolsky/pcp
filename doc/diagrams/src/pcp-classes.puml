@@ -1,18 +1,104 @@
 @startuml pcp-classes
-
-    class Server
-    class Work
-    class Buffer
-    class Client
-    class Producer
-    class Consumer
-    class deque
     
+    class deque <<type T, size N>>
+    {
+        +int capacity() const
+        +int size() const
+        +bool empty() const
+        ---
+        +void push_front(const T &value)
+        +void push_back(const T &value)
+        +T pop_front()
+        +T pop_back()
+        +T operator[](int index)
+        +void clear()
+    }
+
     namespace pcp {
-        Server *-- Work
+
+        class Server
+        {
+            +Server(int prod_workers, int cons_workers)
+            ---
+            +bool run(int int jobs)
+            +bool in_progress()
+            ---
+            -void worker_serve(int id)
+
+            -Producer m_producer
+            -Consumer m_consumer
+            -Buffer m_buffer       
+
+            -const int NOF_PRODS
+            -const int NOF_CONS
+            -bool m_on_service
+
+            -mutex m_bufmtx
+            -condition_variable m_awaker
+            -vector<std::thread> m_threads
+            -map<int,std::mutex> m_mutexes
+            ---
+            -void log(string &&msg)
+            -mutex m_logmtx
+        }
+    
+        class Buffer
+        {
+            +static const int CAPACITY
+            +mutex m_mtx
+            -deque<string, CAPACITY> m_deque
+            ---
+            +int size() const
+            +int capacity() const
+            ---
+            +void put(string item)
+            +string pop()
+            +void clear()
+            ---
+            -void log(string &&msg)
+        }
+
+        class Client
+        {
+            +Client(int jobs)
+            ---
+            -mutex m_mtx
+            -int m_items
+            -int m_jobs
+            ---
+            +bool in_progress()
+            +virtual bool server_job(Buffer &buffer)
+            +void reset(int jobs)
+            ---
+            -virtual const char *name() const
+            -void log(string &&msg)
+        }
+
+        
+        class Producer
+        {
+            +string produce()
+            +bool server_job(Buffer &buffer)
+            ---
+            -const char *name() const
+        }
+
+        class Consumer
+        {
+            +string consume()
+            +bool server_job(Buffer &buffer)
+            ---
+            -const char *name() const
+        }
+        
         Server *-- Buffer
+        Server *-right- Client
         Buffer *-- .deque
         Client <|-- Producer
         Client <|-- Consumer
+
     }
+
+    
+
 @enduml

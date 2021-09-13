@@ -1,4 +1,4 @@
-PLANTUML 	:= plantuml
+PLANTUML 	:= java -jar plantuml.jar
 CFG_F		:= "global.skin"
 ROOT_DIR	:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
