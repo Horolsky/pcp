@@ -30,6 +30,5 @@ Producer-Consumer Problem sandbox
 ### TODO
 - tests
 - make the current model data agnostic
-- decouple the Server and its Clients and provide their interaction through the connect/request funcs
 - extend the Server to work with multiple producers/consumers
 - upgrade or replace the current logger to reduce blocking

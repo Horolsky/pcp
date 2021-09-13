@@ -3,6 +3,9 @@
 
 #include <sstream>
 
+static pcp::Producer stup_prod{};
+static pcp::Consumer stup_cons{};
+
 namespace pcp
 {
     void Server::log(std::string &&msg)
@@ -19,8 +22,8 @@ namespace pcp
 
     Server::Server(int prod_workers, int cons_workers)
         : NOF_PRODS(prod_workers), NOF_CONS(cons_workers),
-          m_producer(),
-          m_consumer(),
+          m_producer(stup_prod),
+          m_consumer(stup_cons),
           m_buffer(),
           m_on_service(true)
     {
@@ -69,14 +72,15 @@ namespace pcp
         log("dtor");
     }
 
-    bool Server::run(int jobs)
+    bool Server::run(Producer& prod, Consumer& cons)
     {
         if (in_progress())
             return false;
-        m_producer.reset(jobs);
-        m_consumer.reset(jobs);
+        std::lock_guard<std::mutex> lock(m_bufmtx);
+        m_producer = prod;
+        m_consumer = cons;
         m_buffer.clear();
-        log("running " + std::to_string(jobs) + " jobs");
+        log("running new connection");
         m_awaker.notify_all();
         return true;
     }

@@ -24,7 +24,7 @@ namespace pcp
         Server(Server &&other);
         ~Server();
 
-        bool run(int jobs);
+        bool run(Producer& prod, Consumer& cons);
         bool in_progress();
 
     private:
@@ -33,8 +33,8 @@ namespace pcp
         std::map<int,std::mutex> m_mutexes;
 
         //TODO: multiple polymorphic PCP clients
-        Producer m_producer;
-        Consumer m_consumer;
+        Producer &m_producer;
+        Consumer &m_consumer;
         Buffer m_buffer;
 
         std::mutex m_bufmtx;
