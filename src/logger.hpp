@@ -22,17 +22,17 @@ private:
     logger() { m_out = &std::cout; };
 
     template <typename T>
-    friend logger &operator<<(logger &log, const T &t)
+    friend logger &operator<<(logger &log, const T &item)
     {
         std::lock_guard<std::mutex> lock(log._mtx);
-        *(log.m_out) << t;
+        *(log.m_out) << item;
         return log;
     }
 
-    friend logger &operator<<(logger &log, std::ostream &(*pf)(std::ostream &))
+    friend logger &operator<<(logger &log, std::ostream &(*function)(std::ostream &))
     {
         std::lock_guard<std::mutex> lock(log._mtx);
-        *(log.m_out) << pf;
+        *(log.m_out) << function;
         return log;
     }
 };

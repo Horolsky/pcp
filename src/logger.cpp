@@ -1,7 +1,7 @@
 #include "logger.hpp" 
 
 static logger* INSTANCE {nullptr};
-static std::ofstream FS;
+static std::ofstream OFSTREAM;
 
 std::string logger::_path = "cout";
 
@@ -14,7 +14,7 @@ logger& logger::instance()
 logger::~logger()
 {
         std::lock_guard<std::mutex> lock(_mtx);
-        if(FS.is_open()) FS.close();
+        if(OFSTREAM.is_open()) OFSTREAM.close();
         if (INSTANCE) delete INSTANCE;
 }
 void logger::reset(std::string &&output)
@@ -33,8 +33,8 @@ void logger::reset(std::string &&output)
     {
         try
         {
-            FS.open(output, std::ios::out | std::ios::trunc);
-            m_out = &FS;
+            OFSTREAM.open(output, std::ios::out | std::ios::trunc);
+            m_out = &OFSTREAM;
             _path = output;
         }
         catch(const std::exception& e)

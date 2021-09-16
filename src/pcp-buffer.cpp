@@ -7,13 +7,13 @@ namespace pcp
 
     void Buffer::log(std::string &&msg)
     {
-        // std::ostringstream log_msg;
-        // log_msg
-            // << "Buffer;"
-            // << this << ";"
-            // << msg << ";"
-            // << m_deque.size() << "\n";
-        // logger::instance() << log_msg.str();
+        std::ostringstream log_msg;
+        log_msg
+            << "Buffer;"
+            << this << ";"
+            << msg << ";"
+            << m_deque.size() << "\n";
+        logger::instance() << log_msg.str();
     }
 
     Buffer::Buffer()
