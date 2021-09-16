@@ -6,7 +6,7 @@ typedef unsigned long int size_t;
 template <int N>
 inline int mod(int x)
 {
-    return (N & (N - 1)) ? (x % N) : (x & (N-1));
+    return (N & (N - 1)) ? (x % N) : (x & (N - 1));
 }
 
 //fixed size deque
@@ -30,29 +30,32 @@ public:
     void push_back(const T &value)
     {
         if (m_size == N) throw std::overflow_error("deque overflow");
-        m_data[mod<N>(N+m_head-(m_size++)-1)] = value;
+        m_data[mod<N>(m_head + N - m_size - 1)] = value;
+        m_size++;
     }
     T pop_front()
     {
         if (m_size == 0) throw std::underflow_error("deque underflow");
         m_size -= 1;
-        return m_data[m_head = mod<N>(m_head+N-1)];
+        return m_data[m_head = mod<N>(m_head + N - 1)];
     }
     T pop_back()
     {
         if (m_size == 0) throw std::underflow_error("deque underflow");
-        return m_data[mod<N>(m_head+N-(m_size--))];
+        auto result = m_data[mod<N>(m_head + N - m_size)];
+        m_size--;
+        return result;
     }
     T operator[](size_t i) const
     {
         if (i >= m_size) throw std::overflow_error("deque index overflow");
-        return m_data[mod<N>(m_head+N-i-1)];
+        return m_data[mod<N>(m_head + N - i - 1)];
     }
     void print() const
     {
         for (int i = 0 ; i < m_size; ++i)
         {
-            std::cout << m_data[mod<N>(m_head+N-i-1)] << ", ";
+            std::cout << m_data[mod<N>(m_head + N - i - 1)] << ", ";
         }
         std::cout << "\n";
     }
