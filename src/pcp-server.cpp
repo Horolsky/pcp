@@ -3,9 +3,6 @@
 
 #include <sstream>
 
-static pcp::Producer stup_prod{};
-static pcp::Consumer stup_cons{};
-
 namespace pcp
 {
     void Server::log(std::string &&msg)
@@ -22,8 +19,8 @@ namespace pcp
 
     Server::Server(int prod_workers, int cons_workers)
         : NOF_PRODS(prod_workers), NOF_CONS(cons_workers),
-          m_producer(stup_prod),
-          m_consumer(stup_cons),
+          m_producer(nullptr),
+          m_consumer(nullptr),
           m_buffer(),
           m_on_service(true)
     {
@@ -72,7 +69,7 @@ namespace pcp
         log("dtor");
     }
 
-    bool Server::run(Producer& prod, Consumer& cons)
+    bool Server::run(Client *prod, Client *cons)
     {
         if (in_progress())
             return false;
@@ -87,25 +84,28 @@ namespace pcp
 
     bool Server::in_progress()
     {
-        return m_producer.in_progress() && m_consumer.in_progress();
+        return m_producer ? m_producer->in_progress() : false 
+        && m_consumer ? m_consumer->in_progress() : false;
     }
 
     void Server::worker_serve(int id)
     {
         log("starting worker " + std::to_string(id));
-        Client &client = id < NOF_PRODS ? static_cast<Client&>(m_producer) : static_cast<Client&>(m_consumer);
         while (m_on_service)
         {
-            while (client.in_progress() && m_on_service)
+            Client *client = id < NOF_PRODS ? m_producer : m_consumer;
+            while (client != nullptr && client->in_progress() && m_on_service)
             {
                 std::lock_guard<std::mutex> lock(m_bufmtx);
-                client.server_job(m_buffer);
+                client->server_job(m_buffer);
             }
             std::unique_lock<std::mutex> lock(m_mutexes[id]);
             log("lulling worker " + std::to_string(id));
-            m_awaker.wait(lock,[&]{ 
-                return m_on_service ? client.in_progress() : true;
-                });
+            m_awaker.wait(lock, [&]
+                          { 
+                            if(!m_on_service) return true;  
+                            else return client ? client->in_progress() : true; 
+                          });
             log("awaking worker " + std::to_string(id));
         }
 

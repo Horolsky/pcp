@@ -70,10 +70,12 @@ int main(int argc, char *argv[])
     
     auto start = std::chrono::steady_clock::now();
     {
-        pcp::Server server{n_prods, n_cons};
         pcp::Producer producer {n_jobs};
         pcp::Consumer consumer {n_jobs};
-        server.run(producer, consumer);
+        pcp::Server server{n_prods, n_cons};
+        
+        server.run(&producer, &consumer);
+        
         int period = 5 * n_jobs;
         if (period > 100)
             period = 100;
