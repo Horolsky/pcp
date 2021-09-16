@@ -29,8 +29,8 @@
             ---
             -void worker_serve(int id)
 
-            -Producer &m_producer
-            -Consumer &m_consumer
+            -Client *m_producer
+            -Client *m_consumer
             -Buffer m_buffer       
 
             -const int NOF_PRODS
